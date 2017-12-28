@@ -6,9 +6,9 @@ defmodule Platform.AccountsTest do
   describe "players" do
     alias Platform.Accounts.Player
 
-    @valid_attrs %{score: 42, username: "some username"}
-    @update_attrs %{score: 43, username: "some updated username"}
-    @invalid_attrs %{score: nil, username: nil}
+    @valid_attrs %{username: "some username", password: "difficult_secret"}
+    @update_attrs %{score: 43, username: "some updated username", display_name: "some updated display name", password: "some updated password"}
+    @invalid_attrs %{username: nil, password: nil}
 
     def player_fixture(attrs \\ %{}) do
       {:ok, player} =
@@ -16,7 +16,14 @@ defmodule Platform.AccountsTest do
         |> Enum.into(@valid_attrs)
         |> Accounts.create_player()
 
-      player
+      # I don't like this -- surely there's a better way to directly
+      # manipulate the struct
+      player_attrs_map =
+        player
+        |> Map.from_struct()
+        |> Map.delete(:password)
+
+      struct(%Platform.Accounts.Player{}, player_attrs_map)
     end
 
     test "list_players/0 returns all players" do
@@ -31,8 +38,8 @@ defmodule Platform.AccountsTest do
 
     test "create_player/1 with valid data creates a player" do
       assert {:ok, %Player{} = player} = Accounts.create_player(@valid_attrs)
-      assert player.score == 42
       assert player.username == "some username"
+      assert player.password == "difficult_secret"
     end
 
     test "create_player/1 with invalid data returns error changeset" do

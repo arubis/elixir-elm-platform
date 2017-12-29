@@ -1,0 +1,38 @@
+{
+  "root": true,
+
+  "extends": "eslint:recommended",
+
+  "env": {
+    "browser": true
+  },
+
+  "rules": { "semi": 0 },
+
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "arrowFunctions": true,
+      "binaryLiterals": true,
+      "blockBindings": true,
+      "defaultParams": true,
+      "destructuring": true,
+      "forOf": true,
+      "generators": true,
+      "modules": true,
+      "objectLiteralComputedProperties": true,
+      "objectLiteralDuplicateProperties": true,
+      "objectLiteralShorthandMethods": true,
+      "objectLiteralShorthandProperties": true,
+      "octalLiterals": true,
+      "regexUFlag": true,
+      "regexYFlag": true,
+      "restParams": true,
+      "spread": true,
+      "templateStrings": true,
+      "unicodeCodePointEscapes": true
+    }
+  }
+}
+

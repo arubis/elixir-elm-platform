@@ -2,9 +2,12 @@ defmodule Platform.Accounts.Player do
   use Ecto.Schema
   import Ecto.Changeset
   alias Platform.Accounts.Player
+  alias Platform.Products.Game
+  alias Platform.Products.Gameplay
 
 
   schema "players" do
+    many_to_many :games, Game, join_through: Gameplay
     field :score, :integer, default: 0
     field :username, :string, unique: true
     field :password, :string, virtual: true

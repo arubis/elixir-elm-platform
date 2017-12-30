@@ -3,6 +3,8 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Http
+import Json.Decode as Decode
 
 
 -- MAIN
@@ -41,7 +43,7 @@ initialModel =
 
 initialCommand : Cmd Msg
 initialCommand =
-    Cmd.none
+    fetchGamesList
 
 
 init : ( Model, Cmd Msg )
@@ -50,18 +52,48 @@ init =
 
 
 
+-- internal functions
+
+
+fetchGamesList : Cmd Msg
+fetchGamesList =
+    Http.get "/api/games" decodeGamesList
+        |> Http.send FetchGamesList
+
+
+decodeGamesList : Decode.Decoder (List Game)
+decodeGamesList =
+    decodeGame
+        |> Decode.list
+        |> Decode.at [ "data" ]
+
+
+decodeGame : Decode.Decoder Game
+decodeGame =
+    Decode.map2 Game
+        -- n.b. this is Json.Decode.map2, not Elm.core.map2
+        (Decode.field "title" Decode.string)
+        (Decode.field "description" Decode.string)
+
+
+
 -- UPDATE
 
 
 type Msg
-    = FetchGamesList
+    = FetchGamesList (Result Http.Error (List Game))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FetchGamesList ->
-            ( { model | gamesList = [] }, Cmd.none )
+        FetchGamesList result ->
+            case result of
+                Ok games ->
+                    ( { model | gamesList = games }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 

@@ -22,10 +22,10 @@ import "phoenix_html"
 
 // Elm
 
-import Elm from "./main"
+import Elm from "./elm"
 
 const elmContainer = document.querySelector("#elm-container");
+const platformer = document.querySelector("#platformer");
 
-if (elmContainer) {
-  const elmApplication = Elm.Main.embed(elmContainer);
-}
+if (elmContainer) Elm.Main.embed(elmContainer);
+if (platformer) Elm.Platformer.embed(platformer);

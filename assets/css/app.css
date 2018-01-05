@@ -47,3 +47,13 @@
   max-height: 50px;
   overflow: hidden;
 }
+
+/* Games section */
+
+.game-item {
+  margin-bottom: 15px;
+  border: 2px solid black;
+  border-radius: 10px;
+}
+
+.media-object { height: 120px; }

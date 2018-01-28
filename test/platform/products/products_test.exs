@@ -6,9 +6,9 @@ defmodule Platform.ProductsTest do
   describe "games" do
     alias Platform.Products.Game
 
-    @valid_attrs %{description: "some description", featured: true, thumbnail: "some thumbnail", title: "some title"}
-    @update_attrs %{description: "some updated description", featured: false, thumbnail: "some updated thumbnail", title: "some updated title"}
-    @invalid_attrs %{description: nil, featured: nil, thumbnail: nil, title: nil}
+    @valid_attrs %{description: "some description", featured: true, slug: "some slug", thumbnail: "some thumbnail", title: "some title"}
+    @update_attrs %{description: "some updated description", featured: false, slug: "some updated slug", thumbnail: "some updated thumbnail", title: "some updated title"}
+    @invalid_attrs %{description: nil, featured: nil, slug: nil, thumbnail: nil, title: nil}
 
     def game_fixture(attrs \\ %{}) do
       {:ok, game} =
@@ -33,6 +33,7 @@ defmodule Platform.ProductsTest do
       assert {:ok, %Game{} = game} = Products.create_game(@valid_attrs)
       assert game.description == "some description"
       assert game.featured == true
+      assert game.slug == "some slug"
       assert game.thumbnail == "some thumbnail"
       assert game.title == "some title"
     end
@@ -47,6 +48,7 @@ defmodule Platform.ProductsTest do
       assert %Game{} = game
       assert game.description == "some updated description"
       assert game.featured == false
+      assert game.slug == "some updated slug"
       assert game.thumbnail == "some updated thumbnail"
       assert game.title == "some updated title"
     end

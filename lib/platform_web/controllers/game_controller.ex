@@ -26,8 +26,8 @@ defmodule PlatformWeb.GameController do
   end
 
   # Surely there's a way to pattern match on play(conn{something_that_wants_html})...
-  def play(conn, %{"id" => id}) do
-    game = Products.get_game!(id)
+  def play(conn, %{"slug" => slug}) do
+    game = Products.get_game_by_slug!(slug)
     render(conn, "show.html", game: game)
   end
 

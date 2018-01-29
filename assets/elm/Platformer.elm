@@ -25,6 +25,8 @@ main =
 type alias Model =
     { characterPositionX : Int
     , characterPositionY : Int
+    , itemPositionX : Int
+    , itemPositionY : Int
     }
 
 
@@ -32,6 +34,8 @@ initialModel : Model
 initialModel =
     { characterPositionX = 50
     , characterPositionY = 300
+    , itemPositionX = 500
+    , itemPositionY = 300
     }
 
 
@@ -80,6 +84,7 @@ viewGame model =
         , viewGameSky
         , viewGameGround
         , viewCharacter model
+        , viewItem model
         ]
 
 
@@ -126,5 +131,17 @@ viewCharacter model =
         , y (toString model.characterPositionY)
         , width "50"
         , height "50"
+        ]
+        []
+
+
+viewItem : Model -> Svg Msg
+viewItem model =
+    image
+        [ xlinkHref "/images/coin.svg"
+        , x (toString model.itemPositionX)
+        , y (toString model.itemPositionY)
+        , width "20"
+        , height "20"
         ]
         []

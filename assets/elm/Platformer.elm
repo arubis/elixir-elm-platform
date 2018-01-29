@@ -75,6 +75,7 @@ viewGame =
         [ viewGameWindow
         , viewGameSky
         , viewGameGround
+        , viewCharacter
         ]
 
 
@@ -109,5 +110,17 @@ viewGameGround =
         , width "600"
         , height "100"
         , fill "green"
+        ]
+        []
+
+
+viewCharacter : Svg Msg
+viewCharacter =
+    image
+        [ xlinkHref "/images/character.gif"
+        , x "1"
+        , y "300"
+        , width "50"
+        , height "50"
         ]
         []

@@ -1,6 +1,8 @@
 module Platformer exposing (..)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 
 -- MAIN
@@ -64,4 +66,48 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ text "Elm Game Base" ]
+    div [] [ viewGame ]
+
+
+viewGame : Svg Msg
+viewGame =
+    svg [ version "1.1", width "600", height "400" ]
+        [ viewGameWindow
+        , viewGameSky
+        , viewGameGround
+        ]
+
+
+viewGameWindow : Svg Msg
+viewGameWindow =
+    rect
+        [ width "600"
+        , height "400"
+        , fill "none"
+        , stroke "black"
+        ]
+        []
+
+
+viewGameSky : Svg Msg
+viewGameSky =
+    rect
+        [ x "0"
+        , y "0"
+        , width "600"
+        , height "300"
+        , fill "#4b7cfb"
+        ]
+        []
+
+
+viewGameGround : Svg Msg
+viewGameGround =
+    rect
+        [ x "0"
+        , y "300"
+        , width "600"
+        , height "100"
+        , fill "green"
+        ]
+        []

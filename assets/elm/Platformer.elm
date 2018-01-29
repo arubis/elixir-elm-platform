@@ -23,12 +23,16 @@ main =
 
 
 type alias Model =
-    {}
+    { characterPositionX : Int
+    , characterPositionY : Int
+    }
 
 
 initialModel : Model
 initialModel =
-    {}
+    { characterPositionX = 50
+    , characterPositionY = 300
+    }
 
 
 init : ( Model, Cmd Msg )
@@ -66,16 +70,16 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ viewGame ]
+    div [] [ viewGame model ]
 
 
-viewGame : Svg Msg
-viewGame =
+viewGame : Model -> Svg Msg
+viewGame model =
     svg [ version "1.1", width "600", height "400" ]
         [ viewGameWindow
         , viewGameSky
         , viewGameGround
-        , viewCharacter
+        , viewCharacter model
         ]
 
 
@@ -114,12 +118,12 @@ viewGameGround =
         []
 
 
-viewCharacter : Svg Msg
-viewCharacter =
+viewCharacter : Model -> Svg Msg
+viewCharacter model =
     image
         [ xlinkHref "/images/character.gif"
-        , x "1"
-        , y "300"
+        , x (toString model.characterPositionX)
+        , y (toString model.characterPositionY)
         , width "50"
         , height "50"
         ]

@@ -1,6 +1,7 @@
 module Platformer exposing (..)
 
 import Html exposing (Html, div)
+import Keyboard exposing (KeyCode, downs)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
@@ -23,7 +24,8 @@ main =
 
 
 type alias Model =
-    { characterPositionX : Int
+    { characterDirection : Direction
+    , characterPositionX : Int
     , characterPositionY : Int
     , itemPositionX : Int
     , itemPositionY : Int
@@ -32,7 +34,8 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { characterPositionX = 50
+    { characterDirection = Right
+    , characterPositionX = 50
     , characterPositionY = 300
     , itemPositionX = 500
     , itemPositionY = 300
@@ -44,12 +47,18 @@ init =
     ( initialModel, Cmd.none )
 
 
+type Direction
+    = Left
+    | Right
+
+
 
 -- UPDATE
 
 
 type Msg
     = NoOp
+    | KeyDown KeyCode
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -58,6 +67,29 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        KeyDown keyCode ->
+            case keyCode of
+                37 ->
+                    -- left arrow
+                    ( { model
+                        | characterDirection = Left
+                        , characterPositionX = model.characterPositionX - 10
+                      }
+                    , Cmd.none
+                    )
+
+                39 ->
+                    -- right arrow
+                    ( { model
+                        | characterDirection = Right
+                        , characterPositionX = model.characterPositionX + 10
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -65,7 +97,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch [ downs KeyDown ]
 
 
 
@@ -125,14 +157,23 @@ viewGameGround =
 
 viewCharacter : Model -> Svg Msg
 viewCharacter model =
-    image
-        [ xlinkHref "/images/character.gif"
-        , x (toString model.characterPositionX)
-        , y (toString model.characterPositionY)
-        , width "50"
-        , height "50"
-        ]
-        []
+    let
+        characterImage =
+            case model.characterDirection of
+                Left ->
+                    "/images/character-left.gif"
+
+                Right ->
+                    "/images/character-right.gif"
+    in
+        image
+            [ xlinkHref characterImage
+            , x (toString model.characterPositionX)
+            , y (toString model.characterPositionY)
+            , width "50"
+            , height "50"
+            ]
+            []
 
 
 viewItem : Model -> Svg Msg

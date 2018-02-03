@@ -34,7 +34,7 @@ type alias Model =
     , itemPositionY : Int
     , itemsCollected : Int
     , playerScore : Int
-          , timeRemaining : Int
+    , timeRemaining : Int
     }
 
 
@@ -103,7 +103,12 @@ update msg model =
 
         TimeUpdate time ->
             if characterFoundItem model then
-                ( model, Random.generate SetNewItemPositionX (Random.int 50 500) )
+                ( { model
+                    | itemsCollected = model.itemsCollected + 1
+                    , playerScore = model.playerScore + 100
+                  }
+                , Random.generate SetNewItemPositionX (Random.int 50 500)
+                )
             else
                 ( model, Cmd.none )
 
@@ -274,6 +279,7 @@ viewItemsCollected model =
                 []
             , viewGameText 300 30 ("x " ++ currentItemCount)
             ]
+
 
 viewGameTime : Model -> Svg Msg
 viewGameTime model =

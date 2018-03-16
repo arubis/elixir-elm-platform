@@ -3,6 +3,9 @@ module Platformer exposing (..)
 import AnimationFrame exposing (diffs)
 import Html exposing (Html, div)
 import Keyboard exposing (KeyCode, downs)
+import Phoenix.Channel
+import Phoenix.Push
+import Phoenix.Socket
 import Random
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -34,6 +37,7 @@ type alias Model =
     , itemPositionX : Int
     , itemPositionY : Int
     , itemsCollected : Int
+    , phxSocket : Phoenix.Socket.Socket Msg
     , playerScore : Int
     , timeRemaining : Int
     }
@@ -48,6 +52,7 @@ initialModel =
     , itemPositionX = 500
     , itemPositionY = 300
     , itemsCollected = 0
+    , phxSocket = initialSocket
     , playerScore = 0
     , timeRemaining = 10
     }
@@ -56,6 +61,16 @@ initialModel =
 init : ( Model, Cmd Msg )
 init =
     ( initialModel, Cmd.none )
+
+
+initialSocket : Phoenix.Socket.Socket Msg
+initialSocket =
+    let
+        devSocketServer =
+            "ws://localhost:4000/socket/websocket"
+    in
+        Phoenix.Socket.init devSocketServer
+            |> Phoenix.Socket.withDebug
 
 
 type Direction
@@ -78,6 +93,7 @@ type Msg
     = NoOp
     | CountdownTimer Time
     | KeyDown KeyCode
+    | PhoenixMsg (Phoenix.Socket.Msg Msg)
     | SetNewItemPositionX Int
     | TimeUpdate Time
 
@@ -87,6 +103,12 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        CountdownTimer time ->
+            if model.gameState == Playing && model.timeRemaining > 0 then
+                ( { model | timeRemaining = model.timeRemaining - 1 }, Cmd.none )
+            else
+                ( model, Cmd.none )
 
         KeyDown keyCode ->
             case keyCode of
@@ -133,6 +155,18 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        PhoenixMsg msg ->
+            let
+                ( phxSocket, phxCmd ) =
+                    Phoenix.Socket.update msg model.phxSocket
+            in
+                ( { model | phxSocket = phxSocket }
+                , Cmd.map PhoenixMsg phxCmd
+                )
+
+        SetNewItemPositionX newPositionX ->
+            ( { model | itemPositionX = newPositionX }, Cmd.none )
+
         TimeUpdate time ->
             if characterFoundItem model then
                 ( { model
@@ -145,15 +179,6 @@ update msg model =
                 ( { model | gameState = Success }, Cmd.none )
             else if model.itemsCollected < 10 && model.timeRemaining == 0 then
                 ( { model | gameState = GameOver }, Cmd.none )
-            else
-                ( model, Cmd.none )
-
-        SetNewItemPositionX newPositionX ->
-            ( { model | itemPositionX = newPositionX }, Cmd.none )
-
-        CountdownTimer time ->
-            if model.gameState == Playing && model.timeRemaining > 0 then
-                ( { model | timeRemaining = model.timeRemaining - 1 }, Cmd.none )
             else
                 ( model, Cmd.none )
 
@@ -183,6 +208,7 @@ subscriptions model =
         [ downs KeyDown
         , diffs TimeUpdate
         , every second CountdownTimer
+        , Phoenix.Socket.listen model.phxSocket PhoenixMsg
         ]
 
 

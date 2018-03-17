@@ -1,7 +1,9 @@
 module Platformer exposing (..)
 
 import AnimationFrame exposing (diffs)
-import Html exposing (Html, div)
+import Html exposing (Html, button, div)
+import Html.Events exposing (onClick)
+import Json.Encode as Encode
 import Keyboard exposing (KeyCode, downs)
 import Phoenix.Channel
 import Phoenix.Push
@@ -52,7 +54,7 @@ initialModel =
     , itemPositionX = 500
     , itemPositionY = 300
     , itemsCollected = 0
-    , phxSocket = initialSocket
+    , phxSocket = initialSocketJoin
     , playerScore = 0
     , timeRemaining = 10
     }
@@ -60,10 +62,10 @@ initialModel =
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, Cmd.none )
+    ( initialModel, Cmd.map PhoenixMsg initialSocketCommand )
 
 
-initialSocket : Phoenix.Socket.Socket Msg
+initialSocket : ( Phoenix.Socket.Socket Msg, Cmd (Phoenix.Socket.Msg Msg) )
 initialSocket =
     let
         devSocketServer =
@@ -71,6 +73,25 @@ initialSocket =
     in
         Phoenix.Socket.init devSocketServer
             |> Phoenix.Socket.withDebug
+            |> Phoenix.Socket.on "save_score" "score:platformer" SaveScore
+            |> Phoenix.Socket.join initialChannel
+
+
+initialSocketJoin : Phoenix.Socket.Socket Msg
+initialSocketJoin =
+    initialSocket
+        |> Tuple.first
+
+
+initialSocketCommand : Cmd (Phoenix.Socket.Msg Msg)
+initialSocketCommand =
+    initialSocket
+        |> Tuple.second
+
+
+initialChannel : Phoenix.Channel.Channel msg
+initialChannel =
+    Phoenix.Channel.init "score:platformer"
 
 
 type Direction
@@ -94,6 +115,9 @@ type Msg
     | CountdownTimer Time
     | KeyDown KeyCode
     | PhoenixMsg (Phoenix.Socket.Msg Msg)
+    | SaveScore Encode.Value
+    | SaveScoreError Encode.Value
+    | SaveScoreRequest
     | SetNewItemPositionX Int
     | TimeUpdate Time
 
@@ -164,6 +188,31 @@ update msg model =
                 , Cmd.map PhoenixMsg phxCmd
                 )
 
+        SaveScore value ->
+            ( model, Cmd.none )
+
+        SaveScoreError value ->
+            Debug.log "Error sending score over socket."
+                ( model, Cmd.none )
+
+        SaveScoreRequest ->
+            let
+                payload =
+                    Encode.object [ ( "player_score", Encode.int model.playerScore ) ]
+
+                phxPush =
+                    Phoenix.Push.init "save_score" "score:platformer"
+                        |> Phoenix.Push.withPayload payload
+                        |> Phoenix.Push.onOk SaveScore
+                        |> Phoenix.Push.onError SaveScoreError
+
+                ( phxSocket, phxCmd ) =
+                    Phoenix.Socket.push phxPush model.phxSocket
+            in
+                ( { model | phxSocket = phxSocket }
+                , Cmd.map PhoenixMsg phxCmd
+                )
+
         SetNewItemPositionX newPositionX ->
             ( { model | itemPositionX = newPositionX }, Cmd.none )
 
@@ -218,7 +267,21 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ viewGame model ]
+    div []
+        [ viewGame model
+        , viewSaveScoreButton
+        ]
+
+
+viewSaveScoreButton : Html Msg
+viewSaveScoreButton =
+    div []
+        [ button
+            [ onClick SaveScoreRequest
+            , class "btn btn-primary"
+            ]
+            [ text "Save Score" ]
+        ]
 
 
 viewGame : Model -> Svg Msg
